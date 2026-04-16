@@ -71,7 +71,7 @@ class UDIStorage:
             session.close()
     
     def save_channels(self, channels: List[Dict[str, Any]]) -> bool:
-        from apps.database.models import Channel
+        from apps.database.models import Channel, Stream
         from apps.database.connection import get_session
         session = get_session()
         try:
@@ -81,16 +81,35 @@ class UDIStorage:
                 if not c:
                     c = Channel(id=chan_id)
                     session.add(c)
-                for k,v in item.items():
+                
+                # Set all fields except 'streams' (handled separately)
+                for k, v in item.items():
                     if k != 'streams' and hasattr(c, k):
-                         setattr(c, k, v)
-                if 'streams' in item:
-                    from apps.database.models import Stream
-                    c.streams = session.query(Stream).filter(Stream.id.in_(item['streams'])).all()
+                        setattr(c, k, v)
+                
+                # Handle stream associations
+                if 'streams' in item and item['streams']:
+                    stream_ids = item['streams']
+                    # Query existing streams
+                    existing_streams = session.query(Stream).filter(Stream.id.in_(stream_ids)).all()
+                    existing_ids = {s.id for s in existing_streams}
+                    
+                    # Create placeholder Stream objects for missing IDs
+                    missing_ids = set(stream_ids) - existing_ids
+                    for sid in missing_ids:
+                        placeholder = Stream(id=sid, name=f'Placeholder {sid}', url='placeholder')
+                        session.add(placeholder)
+                    
+                    # Now set all streams (existing + placeholders)
+                    all_streams = existing_streams + [s for s in session.query(Stream).filter(Stream.id.in_(missing_ids)).all()]
+                    c.streams = all_streams
+            
             session.commit()
             self._update_metadata('channels_last_updated')
+            logger.info(f"Saved {len(channels)} channels with stream associations")
             return True
-        except:
+        except Exception as e:
+            logger.error(f"Error saving channels to storage: {e}", exc_info=True)
             session.rollback()
             return False
         finally:

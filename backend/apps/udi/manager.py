@@ -878,9 +878,9 @@ class UDIManager:
                 # Build index caches
                 self._build_indexes()
             
-            # Save to storage
-            self.storage.save_channels(self._channels_cache)
+            # Save to storage - streams first so channel associations work
             self.storage.save_streams(self._streams_cache)
+            self.storage.save_channels(self._channels_cache)
             self.storage.save_channel_groups(self._channel_groups_cache)
             self.storage.save_logos(self._logos_cache)
             self.storage.save_m3u_accounts(self._m3u_accounts_cache)
