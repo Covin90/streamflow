@@ -595,11 +595,21 @@ class UDIManager:
             List of channel group dictionaries with channels
         """
         self._ensure_initialized()
-        # Filter out groups with no channels
-        return [
-            group for group in self._channel_groups_cache 
-            if group.get('channel_count', 0) > 0
-        ]
+        # Calculate channel_count for each group if not present
+        groups_with_counts = []
+        for group in self._channel_groups_cache:
+            if 'channel_count' not in group:
+                # Calculate based on actual channels in cache
+                group_id = group.get('id')
+                count = len([
+                    ch for ch in self._channels_cache
+                    if ch.get('channel_group_id') == group_id or ch.get('group_id') == group_id
+                ])
+                group['channel_count'] = count
+            # Filter out groups with no channels
+            if group.get('channel_count', 0) > 0:
+                groups_with_counts.append(group)
+        return groups_with_counts
     
     def get_channel_group_by_id(self, group_id: int) -> Optional[Dict[str, Any]]:
         """Get a specific channel group by ID.
