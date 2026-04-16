@@ -39,6 +39,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Prepare lowercase repository owner
+      id: repo_owner
+      run: |
+        echo "owner_lower=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
@@ -126,7 +131,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/streamflow
+        images: ghcr.io/${{ steps.repo_owner.outputs.owner_lower }}/streamflow
         tags: |
           type=raw,value=${{ steps.set_tag.outputs.tag }}
           type=semver,pattern={{version}}
@@ -143,7 +148,7 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-        outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/streamflow,push-by-digest=true,name-canonical=true,push=true
+        outputs: type=image,name=ghcr.io/${{ steps.repo_owner.outputs.owner_lower }}/streamflow,push-by-digest=true,name-canonical=true,push=true
 
     - name: Export digest
       run: |
@@ -181,6 +186,11 @@ jobs:
           pattern: digests-*
           merge-multiple: true
 
+      - name: Prepare lowercase repository owner
+        id: repo_owner
+        run: |
+          echo "owner_lower=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -206,7 +216,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/streamflow
+          images: ghcr.io/${{ steps.repo_owner.outputs.owner_lower }}/streamflow
           tags: |
             type=raw,value=${{ steps.set_tag.outputs.tag }}
             type=semver,pattern={{version}}
@@ -224,18 +234,18 @@ jobs:
         working-directory: /tmp/digests
         run: |
           # Start with the primary tag (preserves the sanitized or semver tag chosen above)
-          tags="-t ghcr.io/${{ github.repository_owner }}/streamflow:${{ steps.set_tag.outputs.tag }}"
+          tags="-t ghcr.io/${{ steps.repo_owner.outputs.owner_lower }}/streamflow:${{ steps.set_tag.outputs.tag }}"
           # For releases, also add the semver tags from metadata and a :latest tag
           if [ "${{ github.event_name }}" = "release" ]; then
-            tags="$tags -t ghcr.io/${{ github.repository_owner }}/streamflow:latest $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< '${{ steps.meta.outputs.json }}')"
+            tags="$tags -t ghcr.io/${{ steps.repo_owner.outputs.owner_lower }}/streamflow:latest $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< '${{ steps.meta.outputs.json }}')"
           fi
 
           # Buildx imagetools expects a list of tag args followed by the list of digests
           # The files in this directory are the digest filenames (sha256:... stripped when created above)
-          digest_args=$(printf 'ghcr.io/${{ github.repository_owner }}/streamflow@sha256:%s ' *)
+          digest_args=$(printf 'ghcr.io/${{ steps.repo_owner.outputs.owner_lower }}/streamflow@sha256:%s ' *)
 
           docker buildx imagetools create $tags $digest_args
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/streamflow:${{ steps.set_tag.outputs.tag }}
+          docker buildx imagetools inspect ghcr.io/${{ steps.repo_owner.outputs.owner_lower }}/streamflow:${{ steps.set_tag.outputs.tag }}
