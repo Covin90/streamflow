@@ -153,7 +153,13 @@ def create_group_stream_sessions_response(
         data = GroupStreamSessionsCreateSchema.from_payload(payload or {})
 
         udi = get_udi_manager()
-        channels = udi.get_channels_by_group(data.group_id)
+        # Convert group_id from string to int
+        try:
+            group_id_int = int(data.group_id)
+        except (ValueError, TypeError):
+            return error_response(f"Invalid group_id: {data.group_id}", status_code=400, code="bad_request")
+        
+        channels = udi.get_channels_by_group(group_id_int)
 
         if not channels:
             return error_response("Group not found or has no channels", status_code=404, code="not_found")
