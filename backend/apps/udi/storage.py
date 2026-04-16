@@ -139,8 +139,10 @@ class UDIStorage:
                          setattr(s, k, v)
             session.commit()
             self._update_metadata('streams_last_updated')
+            logger.info(f"Saved {len(streams)} streams to storage")
             return True
-        except:
+        except Exception as e:
+            logger.error(f"Error saving streams to storage: {e}", exc_info=True)
             session.rollback()
             return False
         finally:

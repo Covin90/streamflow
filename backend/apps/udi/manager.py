@@ -1027,15 +1027,22 @@ class UDIManager:
         logger.info("Refreshing streams...")
         try:
             result = self.fetcher.fetch_streams()
-            self._streams_cache = result.items
-            self._streams_by_id = {st.get('id'): st for st in result.items if st.get('id') is not None}
-            self._streams_by_url = {st.get('url'): st for st in result.items if st.get('url')}
-            self._valid_stream_ids = set(self._streams_by_id.keys())
-            self.storage.save_streams(result.items)
-            self.cache.mark_refreshed('streams')
-            return True
+            with self._lock:
+                self._streams_cache = result.items
+                self._streams_by_id = {st.get('id'): st for st in result.items if st.get('id') is not None}
+                self._streams_by_url = {st.get('url'): st for st in result.items if st.get('url')}
+                self._valid_stream_ids = set(self._streams_by_id.keys())
+            saved = self.storage.save_streams(result.items)
+            if saved:
+                self.cache.mark_refreshed('streams')
+                logger.info(f"Successfully refreshed {len(result.items)} streams")
+                self._initialized = True
+                return True
+            else:
+                logger.error("Failed to save streams to storage")
+                return False
         except Exception as e:
-            logger.error(f"Error refreshing streams: {e}")
+            logger.error(f"Error refreshing streams: {e}", exc_info=True)
             return False
     
     def refresh_channel_groups(self) -> bool:
