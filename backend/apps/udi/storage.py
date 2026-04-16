@@ -131,12 +131,27 @@ class UDIStorage:
                 if not s:
                     s = Stream(id=sid)
                     session.add(s)
-                for k,v in item.items():
-                    if hasattr(s, k):
-                         if k in ['updated_at', 'last_seen', 'stats_updated_at'] and isinstance(v, str):
-                             try: v = datetime.fromisoformat(v)
-                             except: pass
-                         setattr(s, k, v)
+                
+                # Map API fields to database columns, extracting IDs from nested objects
+                for k, v in item.items():
+                    # Skip relationship fields - only set ID columns
+                    if k == 'm3u_account':
+                        # API returns dict or int, DB needs m3u_account_id
+                        if isinstance(v, dict):
+                            v = v.get('id')
+                        k = 'm3u_account_id'
+                    elif k == 'channel_group':
+                        if isinstance(v, dict):
+                            v = v.get('id')
+                        k = 'channel_group_id'
+                    
+                    # Only set if column exists in model
+                    if hasattr(s, k) and k != 'm3u_account':  # Skip the relationship itself
+                        if k in ['updated_at', 'last_seen', 'stats_updated_at'] and isinstance(v, str):
+                            try: v = datetime.fromisoformat(v)
+                            except: pass
+                        setattr(s, k, v)
+            
             session.commit()
             self._update_metadata('streams_last_updated')
             logger.info(f"Saved {len(streams)} streams to storage")
