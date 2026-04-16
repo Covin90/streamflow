@@ -633,9 +633,10 @@ class UDIManager:
             return None
         
         # Filter channels by group
+        # Check both 'channel_group_id' and 'group_id' fields (API may return either)
         channels = [
             channel for channel in self._channels_cache
-            if channel.get('channel_group_id') == group_id
+            if channel.get('channel_group_id') == group_id or channel.get('group_id') == group_id
         ]
         return channels
     
