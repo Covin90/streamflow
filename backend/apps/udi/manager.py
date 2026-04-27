@@ -757,20 +757,23 @@ class UDIManager:
     
     def refresh_all(self) -> bool:
         """Refresh all data from the API.
-        
+
         Returns:
             True if refresh successful
         """
         logger.debug("Refreshing all UDI data...")
         self._update_init_progress(status='in_progress', percentage=0, message='Starting refresh...', current_step='start')
-        
+
+        # Refresh fetcher configuration in case credentials were updated
+        self.fetcher.refresh_configuration()
+
         # Check if Dispatcharr is configured before attempting API calls
         config = get_dispatcharr_config()
         if not config.is_configured():
             logger.warning("Cannot refresh data: Dispatcharr credentials not configured")
             self._update_init_progress(status='failed', message='Dispatcharr not configured')
             return False
-        
+
         try:
             # Set automation busy for the duration of this full refresh.
             # Prevents the scheduled UDI refresh worker from firing a concurrent

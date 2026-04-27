@@ -265,11 +265,19 @@ def _refresh_token() -> bool:
 
 class UDIFetcher:
     """Fetches data from the Dispatcharr API for the UDI system."""
-    
+
     def __init__(self):
         """Initialize the UDI fetcher."""
         self.base_url = _get_base_url()
-        
+
+    def refresh_configuration(self) -> None:
+        """Refresh the fetcher's configuration from current settings.
+
+        This should be called before fetching to ensure the latest credentials
+        are used, in case they were updated after the fetcher was initialized.
+        """
+        self.base_url = _get_base_url()
+
     def test_connection(self) -> bool:
         """Test connection to Dispatcharr API with short timeout.
         
