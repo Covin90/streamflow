@@ -263,17 +263,15 @@ class StreamCheckerService:
         """Main worker loop for processing the check queue."""
         log_function_call(logger, "_worker_loop")
         logger.info("Stream checker worker started")
-        
+
         while self.running:
             try:
-                logger.debug("Worker waiting for next channel from queue...")
                 channel_id = self.check_queue.get_next_channel(timeout=1.0)
                 if channel_id is None:
                     # No channel in queue - check if we should finalize a batch
                     if self.batch_start_time is not None:
                         # Queue is empty and we have an active batch - finalize it
                         self._finalize_batch_changelog()
-                    logger.debug("No channel in queue (timeout)")
                     continue
                 
                 # Start a new batch if not already started
