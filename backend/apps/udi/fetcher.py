@@ -562,18 +562,20 @@ class UDIFetcher:
 
         M3U accounts use a non-paginated endpoint, so a plain list is
         returned rather than a FetchResult.
-        
+
         Returns:
             List of M3U account dictionaries.
         """
         if not self.base_url:
             logger.error("DISPATCHARR_BASE_URL not set")
             return []
-        
+
         url = f"{self.base_url}/api/m3u/accounts/"
         accounts = self._fetch_url(url)
         if isinstance(accounts, list):
             logger.debug(f"Fetched {len(accounts)} M3U accounts")
+            for account in accounts:
+                logger.debug(f"  - Account ID {account.get('id')}: {account.get('name', 'N/A')}")
             return accounts
         return []
     
