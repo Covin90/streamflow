@@ -2455,7 +2455,7 @@ class StreamCheckerService:
                             'avg_bitrate': averages['avg_bitrate'],
                             'avg_fps': averages['avg_fps'],
                             'success': True,
-                            'stream_details': stream_stats[:10]  # Limit to top 10 for brevity
+                            'stream_stats': stream_stats  # Full stream stats for changelog (not limited)
                         })
                         logger.info(f"Added channel {channel_name} to batch changelog")
                 except Exception as e:
