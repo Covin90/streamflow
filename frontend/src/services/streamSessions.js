@@ -160,12 +160,13 @@ export const streamSessionsAPI = {
    * @returns {Promise} Stream URL for viewing
    */
   getStreamViewerUrl: (streamId) => {
-    // Return the proxy URL directly - this uses FFmpeg's existing connection
-    // via local UDP (30000+stream_id), not a new provider connection
+    // Return the ABSOLUTE proxy URL - mpegts.js runs in a Web Worker
+    // which cannot resolve relative URLs. Must include full origin.
+    const proxyUrl = `${window.location.origin}/api/stream/proxy/${streamId}`;
     return Promise.resolve({
       data: {
         success: true,
-        stream_url: `/api/stream/proxy/${streamId}`,
+        stream_url: proxyUrl,
         stream_id: streamId,
         using_proxy: true,
       }
