@@ -528,7 +528,7 @@ export default function ChannelConfiguration() {
   }, [])
 
   useEffect(() => {
-    if (activeTab === 'groups' && groups.length > 0) {
+    if ((activeTab === 'groups' || activeTab === 'regex') && groups.length > 0) {
       loadGroupsConfig()
     }
   }, [activeTab, groups])
