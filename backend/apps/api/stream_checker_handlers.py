@@ -54,6 +54,12 @@ def add_to_stream_checker_queue_response(
             return jsonify({"error": "No data provided"}), 400
 
         service = get_stream_checker_service()
+
+        # Auto-start the worker if it was never started (e.g. all automation disabled)
+        if not service.running:
+            service.start()
+            logger.info("Stream checker service auto-started for manual health check request")
+
         force_check = data.get("force_check", False)
 
         if "channel_id" in data:

@@ -879,20 +879,42 @@ export default function ChannelConfiguration() {
     try {
       setBulkCheckingChannels(true)
 
-      // Show starting notification
-      toast({
-        title: "Bulk Health Check Started",
-        description: `Queuing ${selectedChannels.size} channel${selectedChannels.size !== 1 ? 's' : ''} for checking...`,
-      })
-
       const response = await streamCheckerAPI.addToQueue({
         channel_ids: Array.from(selectedChannels),
-        force_check: true  // Enable force check to bypass 2-hour immunity
+        force_check: true
       })
 
+      const added = response.data.added || 0
+      if (added === 0) {
+        toast({
+          title: "Nothing Queued",
+          description: "All selected channels are already being checked or could not be queued",
+          variant: "destructive"
+        })
+        return
+      }
+
       toast({
-        title: "Channels Queued",
-        description: response.data.message || `${selectedChannels.size} channel${selectedChannels.size !== 1 ? 's' : ''} queued for health check`,
+        title: "Health Check Running",
+        description: `Checking ${added} channel${added !== 1 ? 's' : ''}...`,
+      })
+
+      // Poll until the worker finishes processing our channels
+      const maxWaitMs = 10 * 60 * 1000
+      const startTime = Date.now()
+      while (Date.now() - startTime < maxWaitMs) {
+        await new Promise(resolve => setTimeout(resolve, 3000))
+        const statusResp = await streamCheckerAPI.getStatus()
+        const s = statusResp.data
+        const queueSize = s.queue?.queue_size || 0
+        const inProgress = s.queue?.in_progress || 0
+        if (!s.stream_checking_mode && queueSize === 0 && inProgress === 0) break
+      }
+
+      await loadData()
+      toast({
+        title: "Health Check Complete",
+        description: `Finished checking ${added} channel${added !== 1 ? 's' : ''}`,
       })
     } catch (err) {
       console.error('Error queuing channels for health check:', err)
