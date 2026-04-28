@@ -48,15 +48,9 @@ SLOW_SPEED_DURATION = 30.0  # seconds - how long to tolerate slow speed before q
 # Stream switching thresholds
 SCORE_SWITCH_THRESHOLD = 10.0  # Points diff required to switch primary stream
 SWITCH_COOLDOWN = 60.0  # Seconds between switches to prevent flapping
-
-# Stream switching thresholds
-SCORE_SWITCH_THRESHOLD = 10.0  # Points diff required to switch primary stream
-SWITCH_COOLDOWN = 60.0  # Seconds between switches to prevent flapping
 RESOLUTION_SCORE_TOLERANCE = 5.0  # Points to sacrifice for better resolution
 
 # Quarantine & Review Lifecycle
-# Imported from stream_session_manager
-pass
 PASS_SCORE_THRESHOLD = 70.0  # Score needed to pass review
 class StreamMonitoringService:
     """

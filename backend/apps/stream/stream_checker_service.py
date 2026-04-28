@@ -985,7 +985,8 @@ class StreamCheckerService:
             try:
                 width, height = map(int, str(res).split('x'))
                 return width * height
-            except: pass
+            except ValueError:
+                pass
         return 0
 
     # Removed _refine_sorted_streams in favor of lexicographical Sort Keys.
