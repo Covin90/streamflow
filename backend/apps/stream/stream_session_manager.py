@@ -614,16 +614,15 @@ class StreamSessionManager:
         Returns:
             True if started successfully
         """
-        if session_id not in self.sessions:
-            logger.error(f"Session {session_id} not found")
-            return False
-        
-        session = self.sessions[session_id]
-        if session.is_active:
-            logger.warning(f"Session {session_id} is already active")
-            return False
-        
         with self.session_locks[session_id]:
+            if session_id not in self.sessions:
+                logger.error(f"Session {session_id} not found")
+                return False
+
+            session = self.sessions[session_id]
+            if session.is_active:
+                logger.warning(f"Session {session_id} is already active")
+                return False
             # Check for exclusive channel ownership
             current_owner = self.get_session_owner(session.channel_id)
             if current_owner and current_owner != session_id:

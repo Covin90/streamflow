@@ -928,7 +928,7 @@ export default function ChannelConfiguration() {
         description: `EPG scheduled profile ${targetProfileId ? 'assigned to' : 'removed from'} ${channelIds.length} channels`,
       })
 
-      loadData()
+      await loadData()
     } catch (err) {
       console.error('Failed to batch assign EPG scheduled profile:', err)
       toast({
