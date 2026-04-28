@@ -738,12 +738,6 @@ export default function ChannelConfiguration() {
    * @param {string|null} resolvedProfileId - set when called back from ProfilePickerDialog
    */
   const handleCheckChannel = async (channelId, resolvedProfileId = null) => {
-    // If this channel is part of a multi-selection, delegate to the bulk queue instead
-    if (!resolvedProfileId && selectedChannels.size > 1 && selectedChannels.has(channelId)) {
-      handleBulkHealthCheck()
-      return
-    }
-
     // Pre-flight: profile resolution
     if (!resolvedProfileId) {
       const channel = channels.find(ch => ch.id === channelId)

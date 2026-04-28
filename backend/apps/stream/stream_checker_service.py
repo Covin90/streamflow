@@ -3096,9 +3096,11 @@ class StreamCheckerService:
         Returns:
             Number of channels successfully queued
         """
-        if force_check:
-            for channel_id in channel_ids:
+        for channel_id in channel_ids:
+            if force_check:
                 self.update_tracker.mark_channel_for_force_check(channel_id)
+            self.check_queue.remove_from_completed(channel_id)
+        if force_check:
             logger.info(f"Marked {len(channel_ids)} channels for force check (bypasses 2-hour immunity)")
         return self.check_queue.add_channels(channel_ids, priority)
     
