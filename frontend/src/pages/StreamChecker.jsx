@@ -328,7 +328,7 @@ export default function StreamChecker() {
 
       {/* Batch Progress — hidden during single channel checks to avoid showing
            stale counters from the previous automation run */}
-      {isChecking && totalBatch > 0 && !progress?.is_single_channel_check && (
+      {isChecking && (queued > 0 || inProgress > 0) && !progress?.is_single_channel_check && ( // Only show when there are active channels in queue or in progress
         <Card>
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
