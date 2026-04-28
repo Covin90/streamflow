@@ -218,7 +218,8 @@ class FFmpegStreamMonitor:
         r'decode_slice_header error|concealing|error while decoding mb|'
         r'missing picture in access unit|error decoding the audio block|'
         r'invalid data found when processing input|non-existing pps 0 referenced|'
-        r'no frame!|reference picture missing|i/o error|no such file or directory',
+        r'no frame!|reference picture missing|i/o error|no such file or directory|'
+        r'error during demuxing|input/output error|demuxing: input/output error',
         re.IGNORECASE
     )
 
