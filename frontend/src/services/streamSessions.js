@@ -155,10 +155,20 @@ export const streamSessionsAPI = {
 
   /**
    * Get stream viewer URL for live playback
+   * Uses the local UDP proxy to avoid consuming provider quota
    * @param {number} streamId - Stream ID
    * @returns {Promise} Stream URL for viewing
    */
   getStreamViewerUrl: (streamId) => {
-    return api.get(`/stream-viewer/${streamId}`);
+    // Return the proxy URL directly - this uses FFmpeg's existing connection
+    // via local UDP (30000+stream_id), not a new provider connection
+    return Promise.resolve({
+      data: {
+        success: true,
+        stream_url: `/api/stream/proxy/${streamId}`,
+        stream_id: streamId,
+        using_proxy: true,
+      }
+    });
   },
 };
